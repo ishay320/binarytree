@@ -23,13 +23,16 @@ namespace ariel
     class iterator // for inheritance
     {
     protected:
+    public:
         node<T> *n;
         std::queue<node<T> *> queue;
-
-    public:
         //constructor
+        iterator(){}
         iterator(node<T> *n) : n(n) {}
         ~iterator() {}
+        // iterator(iterator<T>& i)noexcept{}
+        // iterator(iterator<T>&& i)noexcept{}
+
         T &operator*() const { return n->data; }
         T *operator->() { return &n->data; }
         iterator &operator++()
@@ -203,12 +206,14 @@ namespace ariel
         BinaryTree(BinaryTree<T> &tree) //copy constructor
         {
             if (root != nullptr)
+            {
                 recDel(root);
+            }
             node<T> *r = new node<T>(tree.root->data, nullptr);
             root = r;
             deep_copy(tree.root, root);
         }
-        BinaryTree(BinaryTree<T> &&tree)noexcept //move constructor
+        BinaryTree(BinaryTree<T> &&tree) noexcept //move constructor
         {
             root = tree.root;
             tree.root = nullptr;
@@ -225,7 +230,7 @@ namespace ariel
             return *this;
         }
 
-        BinaryTree<T> &operator=(const BinaryTree<T> &&b)noexcept
+        BinaryTree<T> &operator=(BinaryTree<T> &&b) noexcept
         {
             root = b.root;
             b.root = nullptr;
