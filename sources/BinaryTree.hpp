@@ -10,10 +10,13 @@ namespace ariel
     {
     public:
         T data;
-        node *left;
-        node *right;
-        node *parent;
-        node(T _data, node *parent) : data(_data), left(nullptr), right(nullptr), parent(parent) {}
+        node<T> *left;
+        node<T> *right;
+        node<T> *parent;
+        node(T _data, node<T> *parent) : data(_data), left(nullptr), right(nullptr), parent(parent) {}
+        // node(const node<T> &n) : data(n.data), left(n.left != nullptr ? new node<T>(*n.left) : nullptr),
+        //                          right(n.right != nullptr ? new node<T>(*n.right) : nullptr),
+        //                          parent(nullptr) { std::cout << "probe\n"; }
     };
 
     template <typename T>
@@ -77,7 +80,7 @@ namespace ariel
                 }
                 return true;
             }
-            return this->n->data != b.n->data;
+            return !(this->n->data == b.n->data);
         };
         iterator &operator=(const iterator &b)
         {
@@ -149,29 +152,85 @@ namespace ariel
             void recursive(node<T> *n)
             {
                 if (n == nullptr)
-                    return;
+                {
+                    return void();
+                }
                 recursive(n->left);
                 recursive(n->right);
                 iterator<T>::insert(n);
             }
         };
+
     private:
         // binary tree objects
-        node<T> *root;
-        void recDel(node<T> *n)
+        node<T> *root = nullptr;
+
+        void recDel(node<T> *n) //recursive deleting
         {
             if (n == nullptr)
             {
-                return void();
+                return;
             }
             recDel(n->left);
             recDel(n->right);
             delete (n);
         }
 
+        void deep_copy(node<T> *from, node<T> *to)
+        {
+            if (from == nullptr || to == nullptr)
+            {
+                return void();
+            }
+            if (from->left != nullptr)
+            {
+                node<T> *l = new node<T>(from->left->data, to);
+                to->left = l;
+                deep_copy(from->left, to->left);
+            }
+            if (from->right != nullptr)
+            {
+                node<T> *r = new node<T>(from->right->data, to);
+                to->right = r;
+                deep_copy(from->right, to->right);
+            }
+        }
+
     public:
         BinaryTree() : root(nullptr) {}
-        BinaryTree &add_root(T data)
+        BinaryTree(BinaryTree<T> &tree) //copy constructor
+        {
+            if (root != nullptr)
+                recDel(root);
+            node<T> *r = new node<T>(tree.root->data, nullptr);
+            root = r;
+            deep_copy(tree.root, root);
+        }
+        BinaryTree(BinaryTree<T> &&tree) //move constructor
+        {
+            root = tree.root;
+            tree.root = nullptr;
+        }
+        BinaryTree<T> &operator=(const BinaryTree<T> &b)
+        {
+            if (this != &b)
+            {
+                recDel(root);
+                node<T> *r = new node<T>(b.root->data, nullptr);
+                root = r;
+                deep_copy(b.root, root);
+            }
+            return *this;
+        }
+
+        BinaryTree<T> &operator=(const BinaryTree<T> &&b)
+        {
+            root = b.root;
+            b.root = nullptr;
+            return *this;
+        }
+
+        BinaryTree<T> &add_root(T data)
         {
             if (root == nullptr)
             {
@@ -185,7 +244,7 @@ namespace ariel
             root = tmp;
             return *this;
         }
-        BinaryTree &add_left(T search, T data)
+        BinaryTree<T> &add_left(T search, T data)
         {
             if (root == nullptr)
             {
@@ -205,7 +264,7 @@ namespace ariel
             }
             throw std::invalid_argument("there is no such data in the tree");
         }
-        BinaryTree &add_right(T search, T data)
+        BinaryTree<T> &add_right(T search, T data)
         {
             if (root == nullptr)
             {
