@@ -29,6 +29,7 @@ namespace ariel
     public:
         //constructor
         iterator(node<T> *n) : n(n) {}
+        ~iterator() {}
         T &operator*() const { return n->data; }
         T *operator->() { return &n->data; }
         iterator &operator++()
@@ -62,11 +63,7 @@ namespace ariel
         {
             if (b.n == nullptr)
             {
-                if (this->n == nullptr)
-                {
-                    return true;
-                }
-                return false;
+                return this->n == nullptr;
             }
             return this->n->data == b.n->data;
         };
@@ -74,16 +71,17 @@ namespace ariel
         {
             if (b.n == nullptr)
             {
-                if (this->n == nullptr)
-                {
-                    return false;
-                }
-                return true;
+                return !(this->n == nullptr);
             }
             return !(this->n->data == b.n->data);
         };
         iterator &operator=(const iterator &b)
         {
+            if (this == &b)
+            {
+                return *this;
+            }
+
             this->n = b.n;
             this->queue = b.queue;
             return *this;
@@ -112,7 +110,9 @@ namespace ariel
             void recursive(node<T> *n)
             {
                 if (n == nullptr)
+                {
                     return;
+                }
                 recursive(n->left);
                 iterator<T>::insert(n);
                 recursive(n->right);
@@ -132,7 +132,9 @@ namespace ariel
             void recursive(node<T> *n)
             {
                 if (n == nullptr)
+                {
                     return;
+                }
                 iterator<T>::insert(n);
                 recursive(n->left);
                 recursive(n->right);
@@ -206,7 +208,7 @@ namespace ariel
             root = r;
             deep_copy(tree.root, root);
         }
-        BinaryTree(BinaryTree<T> &&tree) //move constructor
+        BinaryTree(BinaryTree<T> &&tree)noexcept //move constructor
         {
             root = tree.root;
             tree.root = nullptr;
@@ -223,7 +225,7 @@ namespace ariel
             return *this;
         }
 
-        BinaryTree<T> &operator=(const BinaryTree<T> &&b)
+        BinaryTree<T> &operator=(const BinaryTree<T> &&b)noexcept
         {
             root = b.root;
             b.root = nullptr;
